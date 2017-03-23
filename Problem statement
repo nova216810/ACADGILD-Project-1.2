@@ -1,0 +1,60 @@
+Problem Statement
+-----------------
+1.In this problem statement we will find the average fare of each class.(HIVE)
+
+use default;
+set hive.cli.print.current.db= true;
+create table if not exists titanic (PassengerId int, Survived int, Pclass int, Name string, Sex string, Age int, SibSp int, parch int, Ticket string, Fare float, Cabin string, Embarked string) row format delimited fields terminated by ',' lines terminated by '\n' stored as textfile;
+load data local inpath 'data/TitanicData.txt' into table titanic;
+
+select Pclass, Avg(fare) from titanic group by Pclass;
+
+MapReduce Total cumulative CPU time: 5 seconds 360 msec
+Ended Job = job_1490183435694_0002
+MapReduce Jobs Launched: 
+Stage-Stage-1: Map: 1  Reduce: 1   Cumulative CPU: 5.36 sec   HDFS Read: 61330 HDFS Write: 61 SUCCESS
+Total MapReduce CPU Time Spent: 5 seconds 360 msec
+OK
+1	84.15468752825701
+2	20.66218318109927
+3	13.675550210257411
+Time taken: 64.651 seconds, Fetched: 3 row(s)
+
+
+Problem Statement
+-----------------
+2.In this problem statement we will find the number of people alive in each class and are embarked in Southampton.(HIVE)
+
+select Pclass , count(Pclass) from titanic where Embarked = 'S' and Survived = 0 group by Pclass ;
+Total MapReduce CPU Time Spent: 7 seconds 800 msec
+OK
+1	53
+2	88
+3	286
+Time taken: 124.554 seconds, Fetched: 3 row(s)
+
+
+Problem Statement
+-----------------
+3.In this problem statement we will find out number of male and female people died in each class(PIG)
+
+DATA = LOAD '/home/acadgild/data/TitanicData.txt' using PigStorage(',') as (PassengerId:int, Survived:int, Pclass:int, Name:chararray, Sex:chararray, Age:int ,SibSp:int, parch:int, Ticket:chararray, Fare:float, Cabin:chararray, Embarked:chararray);
+NumDied = FILTER DATA BY Survived == 1;
+MenDied = FILTER NumDied BY Sex == 'male';
+GrpMen = GROUP MenDied ALL;
+CntMen = FOREACH GrpMen GENERATE COUNT(MenDied);
+DUMP CntMen;
+
+nputFormat - Total input paths to process : 1
+2017-03-22 21:12:06,703 [main] INFO  org.apache.pig.backend.hadoop.executionengine.util.MapRedUtil - Total input paths to process : 1
+(109)
+grunt> 
+
+WomenDied = FILTER NumDied BY Sex == 'female';
+GrpWomen = GROUP WomenDied ALL;
+CntWomen = FOREACH GrpWomen GENERATE COUNT(WomenDied);
+DUMP CntWomen;
+nputFormat - Total input paths to process : 1
+2017-03-22 21:14:56,298 [main] INFO  org.apache.pig.backend.hadoop.executionengine.util.MapRedUtil - Total input paths to process : 1
+(233)
+grunt> 
